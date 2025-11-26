@@ -1,5 +1,4 @@
 [![npm](https://img.shields.io/npm/v/r3f-mag?color=%23F69500)](https://www.npmjs.com/package/r3f-mag)
-[![npm](https://img.shields.io/badge/bulletphysics%20(fork)-3.17-%23F69500)](https://github.com/notrabs/ammo.js/tree/bullet_submodule)
 ![npm](https://img.shields.io/npm/types/r3f-mag?label=%20)
 
 # r3f-mag
