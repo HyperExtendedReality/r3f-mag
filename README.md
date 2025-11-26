@@ -1,4 +1,5 @@
 [![npm](https://img.shields.io/npm/v/r3f-mag?color=%23F69500)](https://www.npmjs.com/package/r3f-mag)
+[![npm](https://img.shields.io/badge/bulletphysics%20(fork)-3.17-%23F69500)](https://github.com/notrabs/ammo.js/tree/bullet_submodule)
 ![npm](https://img.shields.io/npm/types/r3f-mag?label=%20)
 
 # r3f-mag
@@ -9,137 +10,120 @@ Achieved by running the [ammo.js](https://github.com/kripken/ammo.js/) physics l
 Ammo itself is a WebAssembly wrapper around the powerful [Bullet Physics](http://www.bulletphysics.org/) engine.
 Data is synced with SharedArrayBuffers having minimal impact on the main thread.
 
-`r3f-mag` is a modern fork of `use-ammojs` designed for compatibility with Next.js, Turbopack, and the modern `@react-three/drei` ecosystem.
+**r3f-mag** is a modern fork of [use-ammojs](https://github.com/pmndrs/use-ammojs) with added features and compatibility fixes for Next.js, Turbopack, and the modern `@react-three/drei` ecosystem.
 
 ## Installation
 
 ```bash
 npm install r3f-mag @react-three/drei leva stats-gl
 ```
-# or
+
+or
+
 ```bash
 yarn add r3f-mag @react-three/drei leva stats-gl
 ```
-Features
 
-WebWorker Physics: Heavy calculations run off the main thread.
+## Features
 
-Modern Stats: Integrated with Leva and StatsGl for deep performance profiling.
+- **WebWorker Physics**: Heavy calculations run off the main thread
+- **Soft Body Textures**: Added support for textures on soft bodies ✨
+- **Modern Stats**: Integrated with Leva and StatsGl for deep performance profiling
+- **Next.js Compatible**: Fixed bundling issues with Turbopack and Server Components
+- **Full Soft Body Support**: Cloth, ropes, and volumes
 
-Next.js Compatible: Fixed bundling issues with Turbopack and Server Components.
+## Examples
 
-Soft Bodies: Support for cloth, ropes, and volumes.
+### API Demos (Sandbox)
 
-Examples
-API Demos (Sandbox)
+> **Note**: Examples below are from the original use-ammojs repo but remain compatible with the r3f-mag API.
 
-Note: Sandboxes below are from the original use-ammojs repo but compatible with r3f-mag API.
+- [Hello Physics World](https://codesandbox.io/s/use-ammojs-hello-world-example-forked-x5nss7)
+- [Soft Bodies](https://codesandbox.io/s/use-ammojs-soft-bodies-example-forked-qc8l45)
+- [Crane (Constraint)](https://codesandbox.io/s/use-ammojs-crane-constraint-example-forked-w1x1qw)
+- [Crane (Rope + Attachment)](https://codesandbox.io/s/use-ammojs-crane-rope-attachment-example-forked-yd8qgs)
+- [Raycast](https://codesandbox.io/s/use-ammojs-raycast-example-forked-yq15ec)
 
-Hello Physics World
+> ⚠️ **Note**: CodeSandbox examples do not support SharedArrayBuffers [due to missing cross-origin isolation](https://web.dev/coop-coep/) and use regular ArrayBuffers as a fallback. Currently the debug-drawer has no ArrayBuffer fallback implemented and will not render anything.
 
-Soft Bodies
+## Why r3f-mag?
 
-Crane (Constraint)
+This package builds upon [use-ammojs](https://github.com/pmndrs/use-ammojs) and [use-cannon](https://github.com/pmndrs/use-cannon). While use-cannon is excellent and mature, it lacks Soft Body support and can struggle with large triangle meshes. r3f-mag brings the full power of Bullet Physics (Ammo.js) to React Three Fiber with modern tooling support.
 
-Crane (Rope + Attachment)
+### Key Improvements over use-ammojs
 
-Raycast
+- ✅ **Texture support for Soft Bodies** (main feature addition)
+- ✅ Next.js and Turbopack compatibility
+- ✅ Modern build system using Vite
+- ✅ Enhanced performance monitoring with Leva integration
+- ✅ TypeScript improvements
+- ✅ Updated dependencies and ecosystem compatibility
 
-⚠️ Note that the codesandbox examples do not support SharedArrayBuffers due to missing cross-origin isolation and use regular ArrayBuffers as a fallback. Currently the debug-drawer has no ArrayBuffer fallback implemented and will not render anything.
+## Roadmap
 
-Why r3f-mag?
+### Main Goals
 
-This package builds upon use-ammojs and use-cannon. While use-cannon is excellent, it lacks Soft Body support. r3f-mag brings the full power of Bullet Physics (Ammo.js) to React Three Fiber, including Soft Bodies, while fixing modern build system issues found in older wrappers.
+- [x] Create a Physics World as a React context and simulate it in a web-worker
+- [x] Sync three objects to physics Rigid Bodies
+- [x] Add Rigid Body support
+- [x] Add [Soft Body](https://pybullet.org/Bullet/BulletFull/classbtSoftBody.html) support
+  - [x] Volumes/Cloth from Triangle Mesh
+  - [x] Ropes
+  - [x] **Support textures on Soft Bodies** ✨ (New in r3f-mag)
+  - [ ] Deformables
+- [x] Add Constraints between Rigid Bodies
+- [x] Add Constraints to Soft Bodies (ability to pin nodes in place or to Rigid Bodies)
+- [ ] Improve Physics API
+  - [x] Make all props reactive
+  - [x] Expose more methods through the hook (e.g. setPosition/applyImpulse/[more...](https://pybullet.org/Bullet/BulletFull/classbtRigidBody.html))
+  - [ ] Support collision callbacks
+- [x] **Modernize Build System** (Vite/Next.js/Turbopack compatibility) ✨
 
-Roadmap
-Main goals:
+### Low Priority Goals
 
-Create a Physics World as a React context and simulate it in a web-worker
+- [ ] Automatic refresh rate detection and performance throttling
+- [x] Add [Raycast](https://pybullet.org/Bullet/BulletFull/classbtCollisionWorld.html#aaac6675c8134f6695fecb431c72b0a6a) queries
+  - [x] One-time (async) ray-tests
+  - [ ] Continuous queries through a fixed scene component to mitigate worker latency
+- [x] Use ArrayBuffers as a fallback for missing cross-origin isolation
+  - [x] Rigid Bodies
+  - [x] Soft Bodies
+  - [ ] Debug Rendering
+- [x] Simulation management
+  - [x] Configurable simulation speed
+  - [x] Expose performance info
+  - [x] Integrated with @react-three/drei StatsGl component
+  - [x] Integrated with Leva for graphing
+  - [ ] Automatically pause simulation if tab is out of focus or not rendering (as option)
+- [ ] Improve automatic shape detection (set shapeType automatically based on the three Mesh type)
+- [ ] Raycast Vehicle API
+- [ ] Support for instanced objects
 
-Sync three objects to physics Rigid Bodies
+## Quick Start
 
-Add Rigid Body support
+### 1. Wrap your scene in a Physics Provider
 
-Add Soft Body support
-
-Volumes/Cloth from Triangle Mesh
-
-Ropes
-
-Support textures on Soft Bodies
-
-Deformables
-
-Add Constraints between Rigid Bodies
-
-Add Constraints to Soft Bodies (ability to pin nodes in place or to Rigid Bodies)
-
-Improve Physics API
-
-Make all props reactive
-
-Expose more methods trough the hook (e.g. setPosition/applyImpulse/more...)
-
-Support collision callbacks
-
-New: Modernize Build System (Vite/Next.js/Turbopack compatibility)
-
-Low priority goals (for unchecked tasks):
-
-Automatic refresh rate detection and performance throttling (i.e. match the simulation rate to the requestAnimationFrame-rate and throttle performance if simulation steps take too long)
-
-Add Raycast queries
-
-One-time (async) ray-tests
-
-Continuous queries trough a fixed scene component to mitigate worker latency
-
-Use ArrayBuffers as a fallback for missing cross-origin isolation
-
-Rigid Bodies
-
-Soft Bodies
-
-Debug Rendering
-
-Simulation managment
-
-Configurable simulation speed
-
-Expose performance info
-
-Integrated with @react-three/drei StatsGl component
-
-Integrated with Leva for graphing
-
-Automatically pause simulation if tab is out of focus or not rendering (as option)
-
-Improve the automatic shape detection (set shapeType automatically based on the three Mesh type)
-
-Quick Start
-1. Wrap your scene in a Physics Provider
-```bash
+```jsx
 import { Physics, PhysicsStats } from "r3f-mag";
 
-// Wrap your content in the Physics provider
-<Physics>
+<Physics drawDebug>
   <Scene />
-  {/* Optional: Add the new visualizer */}
-  <PhysicsStats /> 
+  {/* Optional: Add performance visualizer */}
+  <PhysicsStats showGraph showStats />
 </Physics>
 ```
 
-2.a Make objects physical (Rigid Bodies)
+### 2a. Make objects physical (Rigid Bodies)
 
-Automatically parse Shape parameters from the three Mesh (courtesy of three-to-ammo):
+Automatically parse Shape parameters from the three Mesh (courtesy of [three-to-ammo](https://github.com/InfiniteLee/three-to-ammo)):
 
-```bash
+```jsx
 import { Box } from "@react-three/drei";
 import { useRigidBody, ShapeType } from "r3f-mag";
 import { Mesh } from "three";
 
 function MyBox() {
-  // If you need a ref with a narrower type than Object3D, provide a generic argument here
+  // If you need a ref with a narrower type than Object3D, provide a generic argument
   const [ref] = useRigidBody<Mesh>(() => ({
     mass: 1,
     position: [0, 2, 4],
@@ -153,9 +137,13 @@ function MyBox() {
   );
 }
 ```
-or define Collision Shapes manually:
 
-```bash
+Or define Collision Shapes manually:
+
+```jsx
+import { BodyType, ShapeType, ShapeFit } from "r3f-mag";
+import { Vector3 } from "three";
+
 const [playerCapsuleRef] = useRigidBody(() => ({
   bodyType: BodyType.DYNAMIC,
   shapeType: ShapeType.CAPSULE,
@@ -167,9 +155,9 @@ const [playerCapsuleRef] = useRigidBody(() => ({
 }));
 ```
 
-or add collisions to an imported gltf scene:
+Or add collisions to an imported GLTF scene:
 
-```bash
+```jsx
 useRigidBody(
   () => ({
     shapeType: ShapeType.MESH,
@@ -178,40 +166,68 @@ useRigidBody(
   gltf.scene
 );
 ```
-2.b Make objects squishy (Soft Bodies)
-```bash
-const [ref] = useSoftBody(() => ({
-  type: SoftBodyType.TRIMESH,
-}));
 
-return (
-  <Sphere position={[0, 2, 7]} args={[1, 16, 16]} ref={ref}>
-    <meshPhysicalMaterial attach="material" color="blue" />
-  </Sphere>
-);
-```
-3. Raycasts
-```bash
-const { rayTest } = useAmmo();
+### 2b. Make objects squishy (Soft Bodies)
 
-// ...
+```jsx
+import { useSoftBody, SoftBodyType } from "r3f-mag";
+import { Sphere } from "@react-three/drei";
 
-const hits = await rayTest({
-  from: new Vector3(0, 5, 7),
-  to: new Vector3(0, -1, 7),
-  multiple: true
-})
+function SoftSphere() {
+  const [ref] = useSoftBody(() => ({
+    type: SoftBodyType.TRIMESH,
+  }));
 
-if (hits.length) {
-    console.log(hits[0].object.name, hits[0].hitPosition)
+  return (
+    <Sphere position={[0, 2, 7]} args={[1, 16, 16]} ref={ref}>
+      <meshPhysicalMaterial attach="material" color="blue" />
+    </Sphere>
+  );
 }
 ```
-4. Update Motion State
-```bash
+
+### 2c. Add Constraints
+
+```jsx
+// TODO: Add constraint examples
+```
+
+### 3. Raycasts
+
+```jsx
+import { useAmmo } from "r3f-mag";
+import { Vector3 } from "three";
+
+function RaycastExample() {
+  const { rayTest } = useAmmo();
+
+  const performRaycast = async () => {
+    const hits = await rayTest({
+      from: new Vector3(0, 5, 7),
+      to: new Vector3(0, -1, 7),
+      multiple: true
+    });
+
+    if (hits.length) {
+      console.log(hits[0].object.name, hits[0].hitPosition);
+    }
+  };
+
+  return <button onClick={performRaycast}>Cast Ray</button>;
+}
+```
+
+### 4. Update Motion State
+
+```jsx
 const [playerRef, api] = useRigidBody(() => ({
   bodyType: BodyType.DYNAMIC,
   shapeType: ShapeType.CAPSULE,
-  // ...
+  angularFactor: new Vector3(0, 0, 0),
+  shapeConfig: {
+    fit: ShapeFit.MANUAL,
+    halfExtents: new Vector3(0.3, 0.6, 0.3),
+  },
 }));
 
 function handleRespawn() {
@@ -220,39 +236,79 @@ function handleRespawn() {
   api.setLinearVelocity(new Vector3(0, 0, 0));
 }
 ```
-Documentation
-Components
-```bash
-<Physics />
+
+## Documentation
+
+### Components
+
+#### `<Physics />`
+
+Physics Context. Use to wrap all physical objects within the same physics world.
+
+**Props:**
+- `drawDebug?: boolean` - Enable debug rendering
+
+```jsx
+<Physics drawDebug>
+  {/* Your physics objects */}
+</Physics>
 ```
 
-Phyiscs Context. Use to wrap all physical objects within the same physics world.
+#### `<PhysicsStats />`
 
-```bash
-<PhysicsStats showGraph={true} showStats={true} />
+Shows a StatsGl panel (FPS/GPU) and registers a Leva monitor graph for Physics CPU timings.
+
+**Props:**
+- `showGraph?: boolean` - Show Leva performance graph (default: true)
+- `showStats?: boolean` - Show StatsGl panel (default: true)
+
+```jsx
+<PhysicsStats showGraph showStats />
 ```
 
-Updated: Shows a StatsGl panel (FPS/GPU) and registers a Leva monitor graph for Physics CPU timings.
+### Hooks
 
-Hooks
-```bash
+#### `useAmmo()`
+
+Utility functions available anywhere within a `<Physics />` context.
+
+```jsx
 const { rayTest } = useAmmo();
 ```
-Utility funcionts available anywhere in the <Physics /> context.
 
-```bash
-const [ref, api] = useRigidBody();
+#### `useRigidBody()`
+
+Create a rigid body physics object.
+
+```jsx
+const [ref, api] = useRigidBody(() => ({
+  mass: 1,
+  position: [0, 5, 0],
+  shapeType: ShapeType.BOX,
+}));
 ```
-```bash
-const [ref, api] = useSoftBody();
+
+**Returns:**
+- `ref`: Reference to attach to your Three.js object
+- `api`: Methods to control the body (setPosition, setLinearVelocity, etc.)
+
+#### `useSoftBody()`
+
+Create a soft body physics object (cloth, rope, volume).
+
+```jsx
+const [ref, api] = useSoftBody(() => ({
+  type: SoftBodyType.TRIMESH,
+}));
 ```
-Cross-origin isolation
 
-To use SharedArrayBuffers for better communication between the main-thread and the web-worker-thread, a cross-origin isolated environment is necessary in modern browsers.
+## Cross-Origin Isolation
 
-Next.js Config (next.config.js):
+To use `SharedArrayBuffers` for optimal communication between the main thread and web worker, cross-origin isolation is required in [modern browsers](https://caniuse.com/sharedarraybuffer).
 
-```bash
+### Next.js Config (`next.config.js`)
+
+```javascript
 module.exports = {
   async headers() {
     return [
@@ -266,43 +322,130 @@ module.exports = {
     ];
   },
 };
-
-Vite Config (vite.config.js):
 ```
-```bash
+
+### Vite Config (`vite.config.js`)
+
+```javascript
+import { defineConfig } from 'vite';
+
 export default defineConfig({
   server: {
     headers: {
-      "Cross-Origin-Embedder-Policy": "require-corp",
-      "Cross-Origin-Opener-Policy": "same-origin",
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Cross-Origin-Opener-Policy': 'same-origin',
     },
   },
 });
 ```
-r3f-mag will fallback to using ArrayBuffers and postMessage() transfers if SharedArrayBuffers are not available. This is not as bad as a full copy on each transfer, but it does not allow the data to be availble on both threads at the same time.
 
-Developing locally
+### Create React App (with @craco/craco)
+
 <details>
-<summary> Setting up local development with Next.js/Vite </summary>
+<summary>Click to expand CRA configuration</summary>
 
+1. Install craco: `npm install @craco/craco --save-dev`
+2. Replace `react-scripts` with `craco` in your `package.json` scripts
+3. Create `craco.config.js` in project root:
 
-Run npm link in r3f-mag root directory.
+```javascript
+const path = require('path');
 
-Run npm link r3f-mag in your project's directory.
+module.exports = {
+  webpack: {
+    configure: (webpackConfig) => {
+      // Fix duplicate React instances when using yarn/npm link
+      webpackConfig.resolve.alias = {
+        ...webpackConfig.resolve.alias,
+        react: path.resolve('./node_modules/react'),
+        '@react-three/fiber': path.resolve('./node_modules/@react-three/fiber'),
+        three: path.resolve('./node_modules/three'),
+      };
+      return webpackConfig;
+    },
+  },
+  devServer: {
+    headers: {
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Cross-Origin-Opener-Policy': 'same-origin',
+    },
+  },
+};
+```
 
-In r3f-mag, run npm run build or npm run dev to watch for changes.
+</details>
 
-If using Next.js and linking, you may need to add the following to next.config.js to resolve peer dependency duplications (React/Three):
+### Fallback Behavior
 
-```bash
+r3f-mag will automatically fallback to using `ArrayBuffers` with `postMessage()` transfers if `SharedArrayBuffers` are not available. While not as performant as SharedArrayBuffers, this fallback still avoids full data copies on each transfer.
+
+## Developing Locally
+
+<details>
+<summary>Setting up local development with Next.js/Vite</summary>
+
+### Using npm link
+
+1. Run `npm link` in r3f-mag root directory
+2. Run `npm link r3f-mag` in your project's directory
+3. In r3f-mag, run `npm run build` or `npm run dev` to watch for changes
+4. Build and run your project as usual
+
+### Resolving Peer Dependency Issues (Next.js)
+
+If using Next.js with `npm link`, you may need to resolve peer dependency duplications:
+
+```javascript
+// next.config.js
 const path = require('path');
 
 module.exports = {
   webpack: (config) => {
-    config.resolve.alias['react'] = path.resolve(__dirname, 'node_modules/react');
-    config.resolve.alias['three'] = path.resolve(__dirname, 'node_modules/three');
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      react: path.resolve(__dirname, 'node_modules/react'),
+      three: path.resolve(__dirname, 'node_modules/three'),
+      '@react-three/fiber': path.resolve(__dirname, 'node_modules/@react-three/fiber'),
+    };
     return config;
   },
 };
-</details>
 ```
+
+</details>
+
+## Migration from use-ammojs
+
+r3f-mag maintains API compatibility with use-ammojs. To migrate:
+
+1. Replace `use-ammojs` with `r3f-mag` in your package.json
+2. Update imports:
+   ```jsx
+   // Before
+   import { Physics, useRigidBody } from 'use-ammojs';
+   
+   // After
+   import { Physics, useRigidBody } from 'r3f-mag';
+   ```
+3. Update `<PhysicsStats />` if used - it now integrates with Leva and StatsGl
+4. Ensure cross-origin isolation headers are configured for your build tool
+
+## Built With
+
+- [ammo.js](https://github.com/kripken/ammo.js/) - WebAssembly port of Bullet Physics
+- [three-ammo](https://github.com/infinitelee/three-ammo) - Three.js integration foundation
+- [react-three-fiber](https://github.com/pmndrs/react-three-fiber) - React renderer for Three.js
+
+## License
+
+MIT
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## Acknowledgments
+
+- Original [use-ammojs](https://github.com/pmndrs/use-ammojs) by the Poimandres team
+- [three-ammo](https://github.com/infinitelee/three-ammo) and related work
+- The Bullet Physics and Ammo.js communities
