@@ -1,0 +1,87 @@
+{
+  "version": "0.3.0",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=14"
+  },
+  "scripts": {
+    "start": "tsup --watch",
+    "build": "tsup",
+    "prepare": "npm run build",
+    "size": "size-limit",
+    "analyze": "size-limit --why"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick --staged"
+    }
+  },
+  "name": "r3f-mag",
+  "description": "Multithreaded Ammo.js Glue for React Three Fiber. A zero-config, high-performance wrapper for Ammo.js.",
+  "author": "HyperXR",
+  "repository": "https://github.com/HyperExtendedReality/r3f-mag",
+  "module": "dist/index.mjs",
+  "size-limit": [
+    {
+      "path": "dist/index.js",
+      "limit": "2 MB"
+    },
+    {
+      "path": "dist/index.mjs",
+      "limit": "2 MB"
+    }
+  ],
+  "devDependencies": {
+    "@react-three/fiber": "^9.0.0",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@types/three": "^0.181.0",
+    "ammojs-typed": "^1.0.6",
+    "esbuild": "^0.27.0",
+    "husky": "^9.1.7",
+    "prettier": "^3.6.2",
+    "pretty-quick": "^4.2.2",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "three": "^0.181.2",
+    "tslib": "^2.8.1",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@react-three/drei": "^10.7.7",
+    "ammo-debug-drawer": "^1.0.1",
+    "ammo.js": "kripken/ammo.js",
+    "leva": "^0.10.1",
+    "stats-gl": "^3.7.0",
+    "three-stdlib": "^2.36.1"
+  },
+  "peerDependencies": {
+    "@react-three/fiber": ">=9.4.0",
+    "react": ">=19.2.0",
+    "three": ">=0.181.2"
+  },
+  "keywords": [
+    "ammo",
+    "ammojs",
+    "ammo.js",
+    "hooks",
+    "hook",
+    "bullet",
+    "physics",
+    "react",
+    "react-three-fiber",
+    "r3f",
+    "three",
+    "threejs",
+    "three.js",
+    "react-three-fiber-ammo",
+    "r3f-mag",
+    "typescript"
+  ]
+}
