@@ -1,6 +1,5 @@
 import { Matrix4, Object3D } from "three";
 import { iterateGeometries } from "../../three-to-ammo";
-import AmmoWorker from "../worker/ammo.worker";
 import {
   BodyConfig,
   MessageType,
@@ -14,9 +13,13 @@ import {
 } from "./types";
 import { isSharedArrayBufferSupported } from "../../utils/utils";
 import { ShapeDescriptor } from "../../physics";
+import AmmoWorker from "../worker/ammo.worker.ts";
+
 
 export function createAmmoWorker(): Worker {
-  return AmmoWorker();
+  const blob = new Blob([AmmoWorker], { type: 'application/javascript' });
+  const url = URL.createObjectURL(blob);
+  return new Worker(url);
 }
 
 export function WorkerHelpers(ammoWorker: Worker) {
@@ -147,12 +150,7 @@ export function WorkerHelpers(ammoWorker: Worker) {
     addSoftBody(
       uuid: UUID,
       sharedSoftBodyBuffers: SharedSoftBodyBuffers,
-      softBodyConfig: SoftBodyConfig,
-      physicsAttributes?: {
-        vertexFloatArray: ArrayLike<number>;
-        indexIntArray: ArrayLike<number>;
-      },
-      mapping?: Int32Array
+      softBodyConfig: SoftBodyConfig
     ) {
       if (isSharedArrayBufferSupported) {
         ammoWorker.postMessage({
@@ -160,8 +158,6 @@ export function WorkerHelpers(ammoWorker: Worker) {
           uuid,
           sharedSoftBodyBuffers,
           softBodyConfig,
-          physicsAttributes,
-          mapping,
         });
       } else {
         ammoWorker.postMessage(
@@ -170,8 +166,6 @@ export function WorkerHelpers(ammoWorker: Worker) {
             uuid,
             sharedSoftBodyBuffers,
             softBodyConfig,
-            physicsAttributes,
-            mapping,
           },
           [sharedSoftBodyBuffers.vertexFloatArray.buffer]
         );

@@ -619,13 +619,6 @@ export enum MessageType {
   RAYCAST_REQUEST,
 }
 
-export interface InitWorldMessage {
-  type: MessageType.INIT;
-  worldConfig: WorldConfig;
-  sharedBuffers: SharedBuffers;
-  isSharedArrayBufferSupported: boolean;
-}
-
 export enum ClientMessageType {
   READY,
   RIGIDBODY_READY,

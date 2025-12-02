@@ -1,16 +1,15 @@
-// Worker Handling
-declare module "*.worker.ts" {
-  const createWorker: () => Worker;
-  export default createWorker;
+declare module "web-worker:*" {
+  const WorkerFactory: new () => Worker;
+  export default WorkerFactory;
 }
 
-// WASM Handling
 declare module "*.wasm" {
-  const content: string;
-  export default content;
+  const value: string;
+  export = value;
 }
 
 declare namespace Ammo {
   const getPointer: (obj: any) => number;
-  const castObject: <T>(obj: any, target: any) => T;
+
+  const castObject: <T>(obj, target) => T;
 }

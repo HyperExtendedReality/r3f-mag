@@ -590,10 +590,8 @@ declare namespace Ammo {
     getLinearFactor(): btVector3;
     setLinearFactor(linearFactor: btVector3): void;
     applyTorque(torque: btVector3): void;
-    applyLocalTorque(torque: btVector3): void;
     applyForce(force: btVector3, rel_pos: btVector3): void;
     applyCentralForce(force: btVector3): void;
-    applyCentralLocalForce(force: btVector3): void;
     applyTorqueImpulse(torque: btVector3): void;
     applyImpulse(impulse: btVector3, rel_pos: btVector3): void;
     applyCentralImpulse(impulse: btVector3): void;
@@ -1076,7 +1074,6 @@ declare namespace Ammo {
       stepHeight: number,
       upAxis?: number
     );
-    setUpAxis(axis: number): void;
     setWalkDirection(walkDirection: btVector3): void;
     setVelocityForTimeInterval(velocity: btVector3, timeInterval: number): void;
     warp(origin: btVector3): void;

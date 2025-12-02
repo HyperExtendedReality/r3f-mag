@@ -5,7 +5,7 @@
 
 _Fast_ Physics hooks for use with [react-three-fiber](https://github.com/pmndrs/react-three-fiber).
 
-Achieved by running the [ammo.js](https://github.com/kripken/ammo.js/) physics library in a web-worker. 
+Achieved by running the [ammo.js](https://github.com/kripken/ammo.js/) physics library in a web-worker.
 Ammo itself is a WebAssembly wrapper around the powerful [Bullet Physics](http://www.bulletphysics.org/) engine.
 Data is synced with SharedArrayBuffers having minimal impact on the main thread.
 
@@ -14,13 +14,13 @@ Data is synced with SharedArrayBuffers having minimal impact on the main thread.
 ## Installation
 
 ```bash
-npm install r3f-mag @react-three/drei leva stats-gl
+pnpm install r3f-mag
 ```
 
 or
 
 ```bash
-yarn add r3f-mag @react-three/drei leva stats-gl
+bun add r3f-mag
 ```
 
 ## Features
@@ -109,7 +109,7 @@ import { Physics, PhysicsStats } from "r3f-mag";
   <Scene />
   {/* Optional: Add performance visualizer */}
   <PhysicsStats showGraph showStats />
-</Physics>
+</Physics>;
 ```
 
 ### 2a. Make objects physical (Rigid Bodies)
@@ -123,11 +123,14 @@ import { Mesh } from "three";
 
 function MyBox() {
   // If you need a ref with a narrower type than Object3D, provide a generic argument
-  const [ref] = useRigidBody<Mesh>(() => ({
-    mass: 1,
-    position: [0, 2, 4],
-    shapeType: ShapeType.BOX,
-  }));
+  const [ref] =
+    useRigidBody <
+    Mesh >
+    (() => ({
+      mass: 1,
+      position: [0, 2, 4],
+      shapeType: ShapeType.BOX,
+    }));
 
   return (
     <Box ref={ref}>
@@ -204,7 +207,7 @@ function RaycastExample() {
     const hits = await rayTest({
       from: new Vector3(0, 5, 7),
       to: new Vector3(0, -1, 7),
-      multiple: true
+      multiple: true,
     });
 
     if (hits.length) {
@@ -245,12 +248,11 @@ function handleRespawn() {
 Physics Context. Use to wrap all physical objects within the same physics world.
 
 **Props:**
+
 - `drawDebug?: boolean` - Enable debug rendering
 
 ```jsx
-<Physics drawDebug>
-  {/* Your physics objects */}
-</Physics>
+<Physics drawDebug>{/* Your physics objects */}</Physics>
 ```
 
 #### `<PhysicsStats />`
@@ -258,6 +260,7 @@ Physics Context. Use to wrap all physical objects within the same physics world.
 Shows a StatsGl panel (FPS/GPU) and registers a Leva monitor graph for Physics CPU timings.
 
 **Props:**
+
 - `showGraph?: boolean` - Show Leva performance graph (default: true)
 - `showStats?: boolean` - Show StatsGl panel (default: true)
 
@@ -288,6 +291,7 @@ const [ref, api] = useRigidBody(() => ({
 ```
 
 **Returns:**
+
 - `ref`: Reference to attach to your Three.js object
 - `api`: Methods to control the body (setPosition, setLinearVelocity, etc.)
 
@@ -312,10 +316,10 @@ module.exports = {
   async headers() {
     return [
       {
-        source: '/(.*)',
+        source: "/(.*)",
         headers: [
-          { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
-          { key: 'Cross-Origin-Embedder-Policy', value: 'require-corp' },
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+          { key: "Cross-Origin-Embedder-Policy", value: "require-corp" },
         ],
       },
     ];
@@ -326,13 +330,13 @@ module.exports = {
 ### Vite Config (`vite.config.js`)
 
 ```javascript
-import { defineConfig } from 'vite';
+import { defineConfig } from "vite";
 
 export default defineConfig({
   server: {
     headers: {
-      'Cross-Origin-Embedder-Policy': 'require-corp',
-      'Cross-Origin-Opener-Policy': 'same-origin',
+      "Cross-Origin-Embedder-Policy": "require-corp",
+      "Cross-Origin-Opener-Policy": "same-origin",
     },
   },
 });
@@ -348,7 +352,7 @@ export default defineConfig({
 3. Create `craco.config.js` in project root:
 
 ```javascript
-const path = require('path');
+const path = require("path");
 
 module.exports = {
   webpack: {
@@ -356,17 +360,17 @@ module.exports = {
       // Fix duplicate React instances when using yarn/npm link
       webpackConfig.resolve.alias = {
         ...webpackConfig.resolve.alias,
-        react: path.resolve('./node_modules/react'),
-        '@react-three/fiber': path.resolve('./node_modules/@react-three/fiber'),
-        three: path.resolve('./node_modules/three'),
+        react: path.resolve("./node_modules/react"),
+        "@react-three/fiber": path.resolve("./node_modules/@react-three/fiber"),
+        three: path.resolve("./node_modules/three"),
       };
       return webpackConfig;
     },
   },
   devServer: {
     headers: {
-      'Cross-Origin-Embedder-Policy': 'require-corp',
-      'Cross-Origin-Opener-Policy': 'same-origin',
+      "Cross-Origin-Embedder-Policy": "require-corp",
+      "Cross-Origin-Opener-Policy": "same-origin",
     },
   },
 };
@@ -396,15 +400,18 @@ If using Next.js with `npm link`, you may need to resolve peer dependency duplic
 
 ```javascript
 // next.config.js
-const path = require('path');
+const path = require("path");
 
 module.exports = {
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
-      react: path.resolve(__dirname, 'node_modules/react'),
-      three: path.resolve(__dirname, 'node_modules/three'),
-      '@react-three/fiber': path.resolve(__dirname, 'node_modules/@react-three/fiber'),
+      react: path.resolve(__dirname, "node_modules/react"),
+      three: path.resolve(__dirname, "node_modules/three"),
+      "@react-three/fiber": path.resolve(
+        __dirname,
+        "node_modules/@react-three/fiber"
+      ),
     };
     return config;
   },
@@ -419,13 +426,15 @@ r3f-mag maintains API compatibility with use-ammojs. To migrate:
 
 1. Replace `use-ammojs` with `r3f-mag` in your package.json
 2. Update imports:
+
    ```jsx
    // Before
-   import { Physics, useRigidBody } from 'use-ammojs';
-   
+   import { Physics, useRigidBody } from "use-ammojs";
+
    // After
-   import { Physics, useRigidBody } from 'r3f-mag';
+   import { Physics, useRigidBody } from "r3f-mag";
    ```
+
 3. Update `<PhysicsStats />` if used - it now integrates with Leva and StatsGl
 4. Ensure cross-origin isolation headers are configured for your build tool
 

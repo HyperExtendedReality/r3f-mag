@@ -6,7 +6,6 @@ import {
   ClientMessageType,
   MessageType,
   SharedBuffers,
-  InitWorldMessage,
 } from "../../lib/types";
 import { updateSoftBodyBuffers } from "./soft-body-manager";
 
@@ -22,13 +21,18 @@ export let usingSharedArrayBuffer = false;
 
 export let sharedBuffers: SharedBuffers;
 
-async function initWorld(data: InitWorldMessage) {
-  console.log("Worker: WorldManager.initWorld started");
-  const { worldConfig, sharedBuffers: transferredBuffers, isSharedArrayBufferSupported } = data;
-
-  console.log("Worker: Calling initializeAmmoWasm");
-  const Ammo = await initializeAmmoWasm();
-  console.log("Worker: initializeAmmoWasm completed");
+async function initWorld({
+  wasmUrl,
+  sharedBuffers: transferredBuffers,
+  worldConfig,
+  isSharedArrayBufferSupported,
+}: {
+  wasmUrl: string;
+  sharedBuffers: SharedBuffers;
+  worldConfig: any;
+  isSharedArrayBufferSupported: boolean;
+}) {
+  const Ammo = await initializeAmmoWasm(wasmUrl);
 
   vector3Tmp1 = new Ammo.btVector3(0, 0, 0);
   vector3Tmp2 = new Ammo.btVector3(0, 0, 0);
@@ -46,21 +50,33 @@ async function initWorld(data: InitWorldMessage) {
 
   world = new World(worldConfig || {});
 
-  console.log("Worker: Sending READY message");
   if (usingSharedArrayBuffer) {
     postMessage({ type: ClientMessageType.READY });
   } else {
-    postMessage({ type: ClientMessageType.READY, sharedBuffers }, [
+    // 1. Prepare the transfer list including Normals for SoftBodies
+    const transferList: Transferable[] = [
       sharedBuffers.rigidBodies.headerIntArray.buffer,
       sharedBuffers.debug.vertexFloatArray.buffer,
-      ...sharedBuffers.softBodies.map((sb) => sb.vertexFloatArray.buffer),
-    ]);
+    ];
+
+    // Push SoftBody buffers (Positions AND Normals)
+    sharedBuffers.softBodies.forEach((sb) => {
+      transferList.push(sb.vertexFloatArray.buffer);
+      // Ensure normals are transferred so lighting/textures work on deformed meshes
+      if (sb.normalFloatArray) {
+        transferList.push(sb.normalFloatArray.buffer);
+      }
+    });
+
+    postMessage(
+      { type: ClientMessageType.READY, sharedBuffers },
+      transferList
+    );
   }
 }
 
 function transferBuffers({ sharedBuffers: receivedSharedBuffers }: { sharedBuffers: SharedBuffers }) {
   sharedBuffers = receivedSharedBuffers;
-
   updateSoftBodyBuffers(sharedBuffers);
 }
 
@@ -87,16 +103,26 @@ export function releaseBuffer() {
       BufferState.READY
     );
   } else {
+    // 2. Prepare transfer list for release (Standard ArrayBuffer fallback)
+    const transferList: Transferable[] = [
+      sharedBuffers.rigidBodies.headerIntArray.buffer,
+      sharedBuffers.debug.vertexFloatArray.buffer,
+    ];
+
+    sharedBuffers.softBodies.forEach((sb) => {
+      transferList.push(sb.vertexFloatArray.buffer);
+      // Transfer Normals back to main thread
+      if (sb.normalFloatArray) {
+        transferList.push(sb.normalFloatArray.buffer);
+      }
+    });
+
     postMessage(
       {
         type: ClientMessageType.TRANSFER_BUFFERS,
         sharedBuffers,
       },
-      [
-        sharedBuffers.rigidBodies.headerIntArray.buffer,
-        sharedBuffers.debug.vertexFloatArray.buffer,
-        ...sharedBuffers.softBodies.map((sb) => sb.vertexFloatArray.buffer),
-      ]
+      transferList
     );
   }
 }

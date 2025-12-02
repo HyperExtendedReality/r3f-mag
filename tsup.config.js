@@ -1,77 +1,51 @@
-import { defineConfig } from "tsup";
-import { build } from "esbuild";
+import { defineConfig } from 'tsup';
+import path from 'path';
+import { build as esbuild } from 'esbuild';
 
 const inlineWorkerPlugin = {
-  name: "inline-worker",
-  setup(buildContext) {
-    buildContext.onLoad({ filter: /\.worker\.ts$/ }, async (args) => {
-      const result = await build({
+  name: 'inline-worker',
+  setup(buildPlugin) {
+    buildPlugin.onResolve({ filter: /\.worker\.ts$/ }, (args) => {
+      return {
+        path: path.resolve(args.resolveDir, args.path),
+        namespace: 'worker-inline',
+      };
+    });
+
+    buildPlugin.onLoad({ filter: /.*/, namespace: 'worker-inline' }, async (args) => {
+      const result = await esbuild({
         entryPoints: [args.path],
         write: false,
         bundle: true,
         minify: true,
-        format: "iife",
-        platform: "browser",
-        target: "es2018",
-        
-        // Loader for WASM files
+        format: 'iife',
+        platform: 'browser',
+        target: 'es2020',
         loader: {
-          ".wasm": "base64",
-          ".wasm.wasm": "base64", // Handle double extension if present
+          '.wasm': 'dataurl',
         },
-
-        // Plugin to stub Node.js built-ins
-        plugins: [{
-          name: 'stub-node-modules',
-          setup(build) {
-            build.onResolve({ filter: /^(fs|path)$/ }, args => {
-              return { namespace: 'stub-node-modules', path: args.path }
-            })
-            build.onLoad({ filter: /.*/, namespace: 'stub-node-modules' }, args => {
-              return { contents: 'export default {}', loader: 'js' }
-            })
-          }
-        }],
-        
-        // Define global objects to prevent ammo.js from thinking it's in Node
-        define: {
-          "process.env.NODE_ENV": '"production"',
-          "__dirname": '""',
-          "process.versions.node": "false", // Critical for ammo.js
-        }
+        external: ['fs', 'path', 'crypto'],
       });
 
       const workerCode = result.outputFiles[0].text;
-      const workerBase64 = Buffer.from(workerCode).toString("base64");
 
       return {
-        loader: "ts",
-        contents: `
-          const code = typeof atob !== 'undefined' ? atob("${workerBase64}") : Buffer.from("${workerBase64}", "base64").toString("binary");
-          const blob = new Blob([code], { type: "application/javascript" });
-          const url = URL.createObjectURL(blob);
-          export default function WorkerFactory() {
-            return new Worker(url);
-          }
-        `,
+        contents: `export default ${JSON.stringify(workerCode)};`,
+        loader: 'js',
       };
     });
   },
 };
 
 export default defineConfig({
-  entry: ["src/index.tsx"], // Ensure this points to .tsx if you have React code
-  format: ["cjs", "esm"],
+  entry: ['src/index.tsx'],
+  format: ['cjs', 'esm'],
   dts: true,
-  splitting: false,
   sourcemap: true,
   clean: true,
-  
-  // Loader for the main thread build
+  platform: 'browser',
   loader: {
-    ".wasm": "base64",
+    '.wasm': 'dataurl',
   },
-  
   esbuildPlugins: [inlineWorkerPlugin],
-  external: ["react", "three", "three-stdlib"],
 });

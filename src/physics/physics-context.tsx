@@ -27,15 +27,18 @@ export interface PhysicsState {
   sharedBuffersRef: MutableRefObject<SharedBuffers>;
   uuidToIndex: Record<UUID, number>;
   debugIndex: Uint32Array;
+
   addRigidBody(
     uuid: UUID,
     mesh: Object3D,
     shape: ShapeDescriptor,
     options?: BodyConfig
-  );
-  removeRigidBody(uuid: UUID);
-  addSoftBody(uuid: UUID, mesh: Object3D, options?: SoftBodyConfig);
-  removeSoftBody(uuid: UUID);
+  ): void;
+  removeRigidBody(uuid: UUID): void;
+
+  addSoftBody(uuid: UUID, mesh: Object3D, options?: SoftBodyConfig): void;
+  removeSoftBody(uuid: UUID): void;
+
   rayTest(options: RaycastOptions): Promise<RaycastHit[]>;
 }
 
@@ -55,47 +58,50 @@ export interface AmmoPhysicsContext {
     mesh: Object3D,
     shape: ShapeDescriptor,
     options?: BodyConfig
-  );
-  removeRigidBody(uuid: UUID);
+  ): void;
+  removeRigidBody(uuid: UUID): void;
 
-  addSoftBody(uuid: UUID, mesh: Object3D, options?: SoftBodyConfig);
-  removeSoftBody(uuid: string);
+  addSoftBody(uuid: UUID, mesh: Object3D, options?: SoftBodyConfig): void;
+  removeSoftBody(uuid: string): void;
 
   addConstraint(
     constraintId: UUID,
     bodyUuid: UUID,
     targetUuid: undefined,
     options: SingleBodyConstraintConfig & CommonConstraintConfig
-  );
+  ): void;
   addConstraint(
     constraintId: UUID,
     bodyUuid: UUID,
     targetUuid: UUID,
     options: TwoBodyConstraintConfig & CommonConstraintConfig
-  );
-  updateConstraint(constraintId: UUID, options?: DynamicConstraintConfig);
-  removeConstraint(constraintId: UUID);
+  ): void;
+  updateConstraint(constraintId: UUID, options?: DynamicConstraintConfig): void;
+  removeConstraint(constraintId: UUID): void;
 
-  updateRigidBody(uuid: UUID, options: UpdateBodyOptions);
+  updateRigidBody(uuid: UUID, options: UpdateBodyOptions): void;
 
-  enableDebug(enable: boolean, debugSharedArrayBuffer: SharedArrayBuffer);
+  enableDebug(enable: boolean, debugSharedArrayBuffer: SharedArrayBuffer): void;
 
-  resetDynamicBody(uuid: UUID);
+  resetDynamicBody(uuid: UUID): void;
+  activateBody(uuid: UUID): void;
 
-  activateBody(uuid: UUID);
-
-  bodySetMotionState(uuid: UUID, position?: Vector3, rotation?: Quaternion);
-  bodySetLinearVelocity(uuid: UUID, velocity: Vector3);
-  bodyApplyImpulse(uuid: UUID, impulse: Vector3, relativeOffset?: Vector3);
-  bodyApplyForce(uuid: UUID, force: Vector3, relativeOffset?: Vector3);
-
-  // Applies an (local) offset to all shapes of the rigidbody, without moving its origin
-  bodySetShapesOffset(uuid: string, offset: Vector3);
+  bodySetMotionState(
+    uuid: UUID,
+    position?: Vector3,
+    rotation?: Quaternion
+  ): void;
+  bodySetLinearVelocity(uuid: UUID, velocity: Vector3): void;
+  bodyApplyImpulse(
+    uuid: UUID,
+    impulse: Vector3,
+    relativeOffset?: Vector3
+  ): void;
+  bodyApplyForce(uuid: UUID, force: Vector3, relativeOffset?: Vector3): void;
+  bodySetShapesOffset(uuid: string, offset: Vector3): void;
 
   object3Ds: Record<string, Object3D>;
-
   rayTest(options: RaycastOptions): Promise<RaycastHit[]>;
-
   physicsPerformanceInfoRef: MutableRefObject<PhysicsPerformanceInfo>;
 }
 
@@ -105,12 +111,9 @@ export const AmmoPhysicsContext = createContext<AmmoPhysicsContext | null>(
 
 export function useAmmoPhysicsContext(): AmmoPhysicsContext {
   const context = useContext(AmmoPhysicsContext);
-
-  if (!context) {
+  if (!context)
     throw new Error(
       "Ammo Physics hook must be used within a <Physics /> Context"
     );
-  }
-
   return context;
 }

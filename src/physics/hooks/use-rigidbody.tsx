@@ -1,16 +1,38 @@
-import { Euler, EulerOrder, MathUtils, Object3D, Quaternion, Vector3 } from "three";
-import React, { RefObject, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Euler,
+  EulerOrder,
+  MathUtils,
+  Object3D,
+  Quaternion,
+  Vector3,
+} from "three";
+import React, { RefObject, useEffect, useRef, useState } from "react";
 import { useAmmoPhysicsContext } from "../physics-context";
-import { BodyConfig, BodyType, ShapeConfig, ShapeType } from "../../three-ammo/lib/types";
+import {
+  BodyConfig,
+  BodyType,
+  ShapeConfig,
+  ShapeType,
+} from "../../three-ammo/lib/types";
 import { createRigidBodyApi, RigidbodyApi } from "../api/rigidbody-api";
-import { isEuler, isQuaternion, isVector3 } from "../../three-ammo/worker/utils";
+import {
+  isEuler,
+  isQuaternion,
+  isVector3,
+} from "../../three-ammo/worker/utils";
 
 type UseRigidBodyOptions = Omit<BodyConfig, "type"> & {
   shapeType: ShapeType;
   bodyType?: BodyType;
+
+  // Overrides the physics shape. If not defined the referenced object3Ds mesh will be used. Origins must match.
   mesh?: Object3D;
+
+  // use for manual overrides with the physics shape.
   shapeConfig?: Omit<ShapeConfig, "type">;
+
   position?: Vector3 | [number, number, number];
+
   rotation?:
     | Euler
     | [number, number, number]
@@ -20,9 +42,9 @@ type UseRigidBodyOptions = Omit<BodyConfig, "type"> & {
 
 export function useRigidBody<T extends Object3D = Object3D>(
   options: UseRigidBodyOptions | (() => UseRigidBodyOptions),
-  externalObjectOrRef?: T | RefObject<T>
+  object3D?: Object3D
 ): [RefObject<T>, RigidbodyApi] {
-  const localRef = useRef<T>(null);
+  const ref = useRef<T>(null);
 
   const physicsContext = useAmmoPhysicsContext();
   const { addRigidBody, removeRigidBody } = physicsContext;
@@ -30,26 +52,11 @@ export function useRigidBody<T extends Object3D = Object3D>(
   const [bodyUUID] = useState(() => MathUtils.generateUUID());
 
   useEffect(() => {
-    // 1. Resolve Object: External Instance -> External Ref -> Local Ref
-    let objectToUse: T | null | undefined;
+    const objectToUse = object3D ? object3D : ref.current!;
 
-    if (externalObjectOrRef) {
-      if ("current" in externalObjectOrRef) {
-        objectToUse = externalObjectOrRef.current;
-      } else {
-        objectToUse = externalObjectOrRef;
-      }
-    } else {
-      objectToUse = localRef.current;
+    if (typeof options === "function") {
+      options = options();
     }
-
-    if (!objectToUse) {
-      console.warn("useRigidBody: Object not found in ref");
-      return;
-    }
-
-    // 2. Resolve Options
-    const finalOptions = typeof options === "function" ? options() : options;
     const {
       bodyType,
       shapeType,
@@ -58,9 +65,8 @@ export function useRigidBody<T extends Object3D = Object3D>(
       rotation,
       mesh,
       ...rest
-    } = finalOptions;
+    } = options;
 
-    // 3. Apply Initial Transforms
     if (position) {
       if (isVector3(position)) {
         objectToUse.position.set(position.x, position.y, position.z);
@@ -69,6 +75,7 @@ export function useRigidBody<T extends Object3D = Object3D>(
       } else {
         throw new Error("invalid position: expected Vector3 or VectorTuple");
       }
+
       objectToUse.updateMatrixWorld();
     }
 
@@ -82,12 +89,17 @@ export function useRigidBody<T extends Object3D = Object3D>(
           rotation[0],
           rotation[1],
           rotation[2],
-          rotation[3] as any
+          rotation[3]
         );
       } else {
         throw new Error("invalid rotation: expected Euler or EulerTuple");
       }
+
       objectToUse.updateMatrixWorld();
+    }
+
+    if (!objectToUse) {
+      throw new Error("useRigidBody ref does not contain a object");
     }
 
     const meshToUse = mesh ? mesh : objectToUse;
@@ -111,16 +123,9 @@ export function useRigidBody<T extends Object3D = Object3D>(
     return () => {
       removeRigidBody(bodyUUID);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run once on mount
+  }, []);
 
-  // 4. Memoize API to prevent re-renders
-  const api = useMemo(
-    () => createRigidBodyApi(physicsContext, bodyUUID),
-    [physicsContext, bodyUUID]
-  );
-
-  return [localRef as RefObject<T>, api];
+  return [ref as RefObject<T>, createRigidBodyApi(physicsContext, bodyUUID)];
 }
 
 /**

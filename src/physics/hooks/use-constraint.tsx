@@ -43,28 +43,19 @@ export function useTwoBodyConstraint(
 export function useConstraint(props: UseConstraintProps) {
   const {
     addConstraint,
-    // updateConstraint, // Unused? Kept only if needed later
+    updateConstraint,
     removeConstraint,
   } = useAmmoPhysicsContext();
 
   const [constraintId] = useState(() => MathUtils.generateUUID());
 
   useEffect(() => {
-    // Optimization: Add optional chaining to prevent crashes if refs are empty
     const uuidA: UUID | undefined =
       props.bodyARef.current?.userData?.useAmmo?.rigidBody?.uuid;
-      
-    // Handle optional bodyB
     const uuidB: UUID | undefined =
-      props.bodyBRef && props.bodyBRef.current
-        ? props.bodyBRef.current.userData?.useAmmo?.rigidBody?.uuid
-        : undefined;
+      props.bodyBRef?.current?.userData?.useAmmo?.rigidBody?.uuid;
 
-    // Guard: UUID A is mandatory
-    if (!uuidA) return;
-
-    // Case 1: Single Body Constraint
-    if (props.bodyBRef === undefined) {
+    if (props.bodyBRef === undefined && uuidA) {
       const { bodyARef, bodyBRef, ...constraintConfig } = props;
 
       addConstraint(
@@ -73,9 +64,11 @@ export function useConstraint(props: UseConstraintProps) {
         undefined,
         constraintConfig as SingleBodyConstraintConfig
       );
-    } 
-    // Case 2: Two Body Constraint (Requires both UUIDs)
-    else if (uuidB) {
+
+      return () => {
+        removeConstraint(constraintId);
+      };
+    } else if (uuidA && uuidB) {
       const { bodyARef, bodyBRef, ...constraintConfig } = props;
 
       addConstraint(
@@ -84,17 +77,12 @@ export function useConstraint(props: UseConstraintProps) {
         uuidB,
         constraintConfig as TwoBodyConstraintConfig
       );
+
+      return () => {
+        removeConstraint(constraintId);
+      };
     }
 
-    return () => {
-      removeConstraint(constraintId);
-    };
-  }, [
-    addConstraint,
-    removeConstraint,
-    constraintId,
-    // Dependency optimization: trigger when ref *content* changes
-    props.bodyARef.current, 
-    props.bodyBRef?.current
-  ]);
+    return () => {};
+  }, [props.bodyARef.current, props.bodyBRef?.current]);
 }
